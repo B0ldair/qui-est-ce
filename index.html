@@ -233,6 +233,7 @@ function copyCode(){
 }
 function onSetupUpdate(room){
   if(!room)return;
+  if(!document.getElementById('p1Name'))return;
   const p1=room.p1,p2=room.p2;
   document.getElementById('p1Name').textContent=p1.pseudo||'Joueur 1';
   document.getElementById('p2Name').textContent=p2.pseudo||'Joueur 2';
