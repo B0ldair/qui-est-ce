@@ -197,12 +197,14 @@ async function createRoom(){
   const pseudo=document.getElementById('pseudoInput').value.trim();
   if(!pseudo)return alert('Entrez votre pseudo !');
   S.pseudo=pseudo;S.pid='p1';S.roomCode=genCode();
+  show('screenSetup');
+  document.getElementById('codeDisplay').textContent=S.roomCode;
   await fbSet(`rooms/${S.roomCode}`,{
     p1:{pseudo,ready:false,chars:[],secret:null,flipped:{}},
     p2:{pseudo:null,ready:false,chars:[],secret:null,flipped:{}},
     turn:'p1',turnCount:1,chat:{},status:'setup',winner:null
   });
-  showSetup();
+  poll(`rooms/${S.roomCode}`,onSetupUpdate);
 }
 async function joinRoom(){
   const pseudo=document.getElementById('pseudoInput').value.trim();
@@ -217,8 +219,11 @@ async function joinRoom(){
   const room=allRooms[matchKey];
   if(room.p2&&room.p2.pseudo)return alert('Salon déjà complet !');
   S.pseudo=pseudo;S.pid='p2';S.roomCode=matchKey;
+  show('screenSetup');
+  document.getElementById('codeDisplay').textContent=S.roomCode;
+  document.getElementById('codeSection').style.display='none';
   await fbPatch(`rooms/${matchKey}/p2`,{pseudo,ready:false,chars:[],secret:null,flipped:{}});
-  showSetup();
+  poll(`rooms/${S.roomCode}`,onSetupUpdate);
 }
 
 // SETUP
