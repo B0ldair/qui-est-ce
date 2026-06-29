@@ -206,14 +206,18 @@ async function createRoom(){
 }
 async function joinRoom(){
   const pseudo=document.getElementById('pseudoInput').value.trim();
-  const code=document.getElementById('roomCodeInput').value.trim().toUpperCase();
+  const code=document.getElementById('roomCodeInput').value.trim().toUpperCase().replace(/\s/g,'');
   if(!pseudo)return alert('Entrez votre pseudo !');
-  if(code.length<4)return alert('Code invalide !');
-  const room=await fbGet(`rooms/${code}`);
-  if(!room)return alert('Salon introuvable !');
+  if(!code)return alert('Entrez un code !');
+  // Lister tous les salons et chercher le bon (insensible à la casse)
+  const allRooms=await fbGet('rooms');
+  if(!allRooms)return alert('Impossible de contacter le serveur !');
+  const matchKey=Object.keys(allRooms).find(k=>k.toUpperCase()===code);
+  if(!matchKey)return alert('Salon introuvable ! Vérifiez le code : '+code);
+  const room=allRooms[matchKey];
   if(room.p2&&room.p2.pseudo)return alert('Salon déjà complet !');
-  S.pseudo=pseudo;S.pid='p2';S.roomCode=code;
-  await fbPatch(`rooms/${code}/p2`,{pseudo,ready:false,chars:[],secret:null,flipped:{}});
+  S.pseudo=pseudo;S.pid='p2';S.roomCode=matchKey;
+  await fbPatch(`rooms/${matchKey}/p2`,{pseudo,ready:false,chars:[],secret:null,flipped:{}});
   showSetup();
 }
 
