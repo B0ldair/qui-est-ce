@@ -238,13 +238,13 @@ function onSetupUpdate(room){
   document.getElementById('p2Name').textContent=p2.pseudo||'Joueur 2';
   document.getElementById('p1StatusBox').innerHTML=(p1.ready?'✅ ':'⏳ ')+'<strong>'+(p1.pseudo||'Joueur 1')+'</strong>';
   document.getElementById('p2StatusBox').innerHTML=(p2.pseudo?(p2.ready?'✅ ':'⏳ '):'🔴 ')+'<strong>'+(p2.pseudo||'Joueur 2')+'</strong>';
-  if(p2.pseudo){document.getElementById('setupStatusBadge').textContent='Connecté !';document.getElementById('setupStatusBadge').className='badge green';}
-  if(p1.ready&&p2.ready&&room.status==='setup'){
-    if(S.pid==='p1')fbPatch(`rooms/${S.roomCode}`,{status:'picking'});
+  if(p2&&p2.pseudo){document.getElementById('setupStatusBadge').textContent='Connecté !';document.getElementById('setupStatusBadge').className='badge green';}
+  if(p1.ready&&p2&&p2.ready&&room.status==='setup'){
+    fbPatch(`rooms/${S.roomCode}`,{status:'picking'});
   }
   if(room.status==='picking'){
     stopPoll();
-    const all=[...(p1.chars||[]),...(p2.chars||[])];
+    const all=[...(p1.chars||[]),...(p2&&p2.chars||[])];
     const seen=new Set();
     S.chars=all.filter(c=>{if(seen.has(c.name))return false;seen.add(c.name);return true;});
     showSecretPicker();
