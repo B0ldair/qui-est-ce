@@ -145,6 +145,7 @@ input:focus{border-color:#888}
       <input id="inMsg" placeholder="Posez une question…" onkeydown="if(event.key==='Enter')sendMsg()" autocomplete="off">
       <button class="btn primary" onclick="sendMsg()">↑</button>
     </div>
+    <button class="btn primary" id="btnNextTurn" onclick="nextTurn()" style="display:none;margin-bottom:8px">✅ Tour suivant</button>
     <button class="btn" onclick="openGuess()" style="border-color:#1a1a1a;font-weight:600">🎯 Deviner le personnage</button>
   </div>
 </div>
@@ -370,6 +371,7 @@ function onGame(room) {
   const bar = document.getElementById('turnBar');
   if (myTurn) { bar.className = 'turn-bar my-turn'; bar.textContent = 'C\'est votre tour !'; }
   else { bar.className = 'turn-bar wait'; bar.textContent = 'En attente de ' + (room[op]?.pseudo||'l\'adversaire') + '…'; }
+  document.getElementById('btnNextTurn').style.display = myTurn ? 'block' : 'none';
   renderBoard();
   renderChat(room.chat || {});
   if (room.status === 'gameover' && !G.gameOver) {
@@ -403,11 +405,12 @@ async function sendMsg() {
   const inp = document.getElementById('inMsg');
   const txt = inp.value.trim(); if (!txt) return; inp.value = '';
   await fPush(`rooms/${G.code}/chat`, { pid: G.pid, author: G.pseudo, text: txt, ts: Date.now() });
+}
+async function nextTurn() {
   const room = await fGet(`rooms/${G.code}`);
-  if (room && room.turn === G.pid) {
-    const op = G.pid === 'p1' ? 'p2' : 'p1';
-    await fPatch(`rooms/${G.code}`, { turn: op, turnCount: (room.turnCount||1) + 1 });
-  }
+  if (!room || room.turn !== G.pid) return;
+  const op = G.pid === 'p1' ? 'p2' : 'p1';
+  await fPatch(`rooms/${G.code}`, { turn: op, turnCount: (room.turnCount||1) + 1 });
 }
 function renderChat(obj) {
   const box = document.getElementById('chatbox');
