@@ -36,7 +36,7 @@ input:focus{border-color:#888}
 .grid-sm{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:7px;margin-bottom:10px}
 .char-card{border-radius:8px;border:1px solid #e0ddd5;overflow:hidden;background:#f5f4f0;position:relative}
 .char-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
-.char-card .cname{font-size:11px;text-align:center;padding:3px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rename-input{width:100%;font-size:11px;text-align:center;padding:3px 4px;font-weight:500;border:none;border-top:1px solid #e0ddd5;background:#fff;outline:none;color:#1a1a1a;cursor:text}
 .char-card .rm{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:4px;width:20px;height:20px;font-size:12px;cursor:pointer}
 
 .pstatus{display:flex;gap:8px;margin-top:8px}
@@ -270,7 +270,9 @@ function onSetup(room) {
     return;
   }
   if (p1.ready && p2.pseudo && p2.ready && room.status === 'setup') {
-    fPatch(`rooms/${G.code}`, { status: 'picking' });
+    // Fusionner les personnages des deux joueurs (au moins un doit en avoir)
+    const all = [...(p1.chars||[]), ...(p2.chars||[])];
+    if (all.length >= 2) fPatch(`rooms/${G.code}`, { status: 'picking' });
   }
 }
 
@@ -300,13 +302,17 @@ function renderPreview() {
   const el = document.getElementById('charPreview'); el.innerHTML = '';
   G.chars.forEach((c, i) => {
     const d = document.createElement('div'); d.className = 'char-card';
-    d.innerHTML = `<img src="${c.img}"><div class="cname">${c.name}</div><button class="rm" onclick="rmChar(${i})">✕</button>`;
+    d.innerHTML = `
+      <img src="${c.img}">
+      <input class="rename-input" value="${c.name}" onchange="renameChar(${i}, this.value)" onclick="this.select()">
+      <button class="rm" onclick="rmChar(${i})">✕</button>`;
     el.appendChild(d);
   });
   document.getElementById('charCount').textContent = G.chars.length + ' personnage(s)';
-  document.getElementById('btnReady').disabled = G.chars.length < 2;
+  document.getElementById('btnReady').disabled = false;
 }
 function rmChar(i) { G.chars.splice(i, 1); renderPreview(); }
+function renameChar(i, val) { if (val.trim()) G.chars[i].name = val.trim(); }
 
 async function markReady() {
   const btn = document.getElementById('btnReady');
